@@ -1,4 +1,4 @@
-var CACHE_VERSION = 'restaurant-reviews';
+var CACHE_VERSION = 'restaurant-reviews-v1';
 var CACHE_FILES = [
 	'/',
 	'/index.html',
