@@ -161,8 +161,8 @@ class DBHelper {
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      animation: google.maps.Animation.DROP}
-    );
+      animation: google.maps.Animation.DROP
+    });
     return marker;
   }
 
@@ -175,16 +175,16 @@ if (navigator.serviceWorker) {
   navigator.serviceWorker.register('./sw.js')
     .then(function (registration) {
       console.log(registration);
-      createDB();
+      createAndUpdateDB();
     })
     .catch(function (e) {
       console.error(e);
-    })
+    });
 } else {
   console.log('Service Worker is not supported in this browser.');
 }
 
-function createDB() {
+function createAndUpdateDB() {
   'use strict';
 
   //check for support
@@ -193,29 +193,31 @@ function createDB() {
     return;
   }
 
-  var dbPromise = idb.open('restaurant-reviews', 1, function(upgradeDb){
+  var dbPromise = idb.open('restaurant-reviews', 1, function (upgradeDb) {
     if (!upgradeDb.objectStoreNames.contains('restaurants')) {
-      upgradeDb.createObjectStore('restaurants', {keyPath:  'id'});
+      upgradeDb.createObjectStore('restaurants', {
+        keyPath: 'id'
+      });
     }
   });
 
   var items;
-  DBHelper.fetchRestaurants( (error, restaurants) => {
-    if(error){
+  DBHelper.fetchRestaurants((error, restaurants) => {
+    if (error) {
       console.log(error);
     } else {
       items = restaurants;
     }
   });
 
-  dbPromise.then(function(db) {
+  dbPromise.then(function (db) {
     var tx = db.transaction('restaurants', 'readwrite');
     var store = tx.objectStore('restaurants');
     items.forEach(item => {
       store.put(item);
     });
     return tx.complete;
-  }).then(function() {
+  }).then(function () {
     console.log('Store Updated');
   });
 }
