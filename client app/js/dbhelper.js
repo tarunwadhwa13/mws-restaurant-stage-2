@@ -167,3 +167,55 @@ class DBHelper {
   }
 
 }
+
+/*
+ * Service Worker Register.
+ */
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(function (registration) {
+      console.log(registration);
+      createDB();
+    })
+    .catch(function (e) {
+      console.error(e);
+    })
+} else {
+  console.log('Service Worker is not supported in this browser.');
+}
+
+function createDB() {
+  'use strict';
+
+  //check for support
+  if (!('indexedDB' in window)) {
+    console.log('This browser doesn\'t support IndexedDB');
+    return;
+  }
+
+  var dbPromise = idb.open('restaurant-reviews', 1, function(upgradeDb){
+    if (!upgradeDb.objectStoreNames.contains('restaurants')) {
+      upgradeDb.createObjectStore('restaurants', {keyPath:  'id'});
+    }
+  });
+
+  var items;
+  DBHelper.fetchRestaurants( (error, restaurants) => {
+    if(error){
+      console.log(error);
+    } else {
+      items = restaurants;
+    }
+  });
+
+  dbPromise.then(function(db) {
+    var tx = db.transaction('restaurants', 'readwrite');
+    var store = tx.objectStore('restaurants');
+    items.forEach(item => {
+      store.put(item);
+    });
+    return tx.complete;
+  }).then(function() {
+    console.log('Store Updated');
+  });
+}
